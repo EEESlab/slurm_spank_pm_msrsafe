@@ -57,59 +57,60 @@ After that, compile with commands:
     make
     make install
 
-The plugin is located in $INSTALL_PATH/lib directory.
+The plugin will be located in $INSTALL_PATH/lib directory.
 
 DESCRIPTION
 ----------------
 This plugin is able to allow standard users to get access to the MSR_SAFE driver
 and to the power manager. The following steps are performed on every node involved
-in the job where the plugin has been invoked:
+in the SLURM job where the plugin has been invoked:
 
-1. Check if the environment variable $SLURM_SPANK_PM_MSRSAFE has been set
+1. Check if the environment variable $SLURM_SPANK_PM_MSRSAFE has been set in the job
     otherwise, terminate.
-2. Check if all CPUs of the node own to the job otherwise terminate.
+2. Check if all CPUs of the current node are involved in the job otherwise terminate.
 3. Check if the MSR_SAFE driver is installed and accessible from the plugin.
-4. If MSR_SAFE driver is enabled, the plugin makes a dump of the writable
+4. If MSR_SAFE driver is installed, the plugin makes a dump of the writable
     MSR registers saving their values in /tmp/msrsafe_dump.
 5. After the dump, it sets R/W permissions to "everyone" to the following sysfs files:
     * /dev/cpu/msr_whitelist
     * /dev/cpu/msr_batch
     * /dev/cpu/X/msr_safe
 6. When MSR_SAFE configuration is concluded, the plugin checks which
-    power manager is currently run on the node (cpufreq or intel_pstate).
-7. If cpufreq run on the node, it makes a dump on the currently configuration
-    of the power manager saving their values in /tmp/pm_cpufreq_dump.
+    power manager is currently installed on the node (cpufreq or intel_pstate).
+7. If cpufreq run on the node, it makes a dump of the currently configuration
+    saving its state in /tmp/pm_cpufreq_dump.
 8. After that, it set R/W permission to "everyone" to the following sysfs files:
     * /sys/devices/system/cpu/cpuX/cpufreq/scaling_governor
     * /sys/devices/system/cpu/cpuX/cpufreq/scaling_max_freq
     * /sys/devices/system/cpu/cpuX/cpufreq/scaling_min_freq
     * /sys/devices/system/cpu/cpuX/cpufreq/scaling_setspeed
-9. Set performance governor to the following files:
+9. Set the performance governor to the following sysfs files:
     * /sys/devices/system/cpu/cpuX/cpufreq/scaling_governor
 10. While if intel_pstate driver is the current power driver, it makes a dump
-    of the currently configuration saving their values in /tmp/pm_ipstate_dump.
+    of the currently configuration saving its state in /tmp/pm_ipstate_dump.
 11. After that, it set R/W permission to "everyone" to the following sysfs files:
-    * /sys/devices/system/cpu/cpu%ld/cpufreq/scaling_governor
-    * /sys/devices/system/cpu/cpu%ld/cpufreq/scaling_max_freq
-    * /sys/devices/system/cpu/cpu%ld/cpufreq/scaling_min_freq
+    * /sys/devices/system/cpu/cpuX/cpufreq/scaling_governor
+    * /sys/devices/system/cpu/cpuX/cpufreq/scaling_max_freq
+    * /sys/devices/system/cpu/cpuX/cpufreq/scaling_min_freq
     * /sys/devices/system/cpu/intel_pstate/no_turbo
     * /sys/devices/system/cpu/intel_pstate/max_perf_pct
     * /sys/devices/system/cpu/intel_pstate/min_perf_pct
 12. To conclude, the plugin applies an hack to the intel_pstate driver to disable
-    the frequency variation.
+    the frequency variation (intel_pstate does not implement a userspace governor).
 
-When the job terminate, the plugin completes the following steps to restore the node:
+After that, the job run. When the job terminate, the plugin completes the following 
+steps to restore the node:
 
-1. If the /tmp/msrsafe_dump file exist restore the MSR registers.
+1. If the /tmp/msrsafe_dump file exist, the plugin restore the MSR registers.
 2. Remove the permission to the sysfs MSR_SAFE files.
-3. When MSR_SAFE restore process is concluded, the plugin checks which
-    power manager is currently run on the node (cpufreq or intel_pstate).
+3. When the MSR_SAFE restore process is concluded, the plugin checks which
+    power manager is currently installed on the node (cpufreq or intel_pstate).
 4. If cpufreq run on the node, check and restore the power manager configuration
     file: /tmp/pm_cpufreq_dump.
-5. Remove the permission to the above cpufreq files.
+5. Remove the permission to the cpufreq files.
 6. If intel_pstate run on the node, check and restore the power manager configuration
     file: /tmp/pm_ipstate_dump.
-7. Remove the permission to the above intel_pstate files.
+7. Remove the permission to the intel_pstate files.
 
 
 MSR_SAFE DRIVER
