@@ -59,15 +59,11 @@ int main(int argc, char **argv)
     }
   }
 
-  if(prolog){
-    printf("PROLOG TEST:\n");
+  if(prolog)
     slurm_spank_job_prolog(spank_ctx, 0, NULL);
-  }
 
-  if(epilog){
-    printf("EPILOG TEST:\n");
+  if(epilog)
     slurm_spank_job_epilog(spank_ctx, 0, NULL);
-  }
 
   if(prolog == FALSE && epilog == FALSE){
     printf("Missing parameters:\n");
@@ -125,19 +121,13 @@ int slurm_spank_job_prolog(spank_t spank_ctx, int argc, char **argv)
 
   // Configure MSRSAFE
   if(set_msrsafe(SET) < 0){
-    slurm_info("Failed to configure the MSRSAFE driver on node '%s'!\n",
-      hostname);
     ret = -1;
   }
 
   // Configure OS power manager
   if(set_pm(SET) < 0){
-    slurm_info("Failed to configure the OS power manager on node '%s'!\n",
-      hostname);
     ret = -2;
   }
-
-  slurm_info("Spank PM_MSRSAFE plugin has configured the node '%s'!\n", hostname);
 
   return ret;
 }
@@ -155,22 +145,20 @@ int slurm_spank_job_epilog(spank_t spank_ctx, int argc, char **argv)
       hostname);
     return 0;
   }
+#ifndef SLURM_SPANK_TEST
   else
     slurm_info("Running spank PM_MSRSAFE plugin on the node '%s'!\n", hostname);
+#endif // SLURM_SPANK_TEST
 
   // Reset MSRSAFE
   if(set_msrsafe(RESET) < 0){
-    slurm_info("Failed to reset the MSRSAFE driver!\n");
     ret = -1;
   }
 
   // Reset OS power manager
   if(set_pm(RESET) < 0){
-    slurm_info("Failed to reset the OS power manager!\n");
     ret = -2;
   }
-
-  slurm_info("Spank PM_MSRSAFE plugin has restored the node '%s'!\n", hostname);
 
   // Remove dump files
   cleanup_dumps();

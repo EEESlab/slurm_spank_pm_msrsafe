@@ -265,6 +265,8 @@ static int dump_msrsafe()
           }
         }
         else{
+          slurm_info("Failed to read on cpu %lu the MSR address %s!\n",
+              i, addr_str);
           ret = -6;
         }
       }
@@ -348,14 +350,14 @@ int set_msrsafe(int conf)
   if(conf == SET){
     // Dump MSR registers
     if(dump_msrsafe() < 0){
-      slurm_info("Failed to dump MSR registers!\n");
+      slurm_info("Failed to dump all MSR registers!\n");
       ret = -3;
     }
   }
   else if(conf == RESET){
     // Restore MSR
     if(restore_msrsafe() < 0){
-      slurm_info("Failed to restore MSR registers!\n");
+      slurm_info("Failed to restore all MSR registers!\n");
       ret = -4;
     }
   }
